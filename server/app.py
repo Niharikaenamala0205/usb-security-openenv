@@ -67,7 +67,11 @@ class ActionInput(BaseModel):
 
 @app.post("/reset")
 def reset():
-    llm_output = call_llm()   # MUST EXECUTE
+    try:
+        llm_output = call_llm()
+    except Exception as e:
+        llm_output = f"LLM error: {str(e)}"
+
     result = env.reset()
     result["llm_check"] = llm_output
     return result
