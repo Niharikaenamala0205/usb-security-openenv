@@ -6,6 +6,25 @@ from openai import OpenAI
 
 app = FastAPI()
 
+# ---------------- LLM FUNCTION ----------------
+def call_llm():
+    client = OpenAI(
+        base_url=os.environ["API_BASE_URL"],
+        api_key=os.environ["API_KEY"],
+    )
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",   # ✅ FIXED MODEL
+        messages=[
+            {"role": "user", "content": "Hello"}
+        ],
+        max_tokens=5
+    )
+
+    return response.choices[0].message.content
+
+
+# ---------------- RL ENV ----------------
 class USBEnv:
     def __init__(self):
         self.user_types = ["Owner", "Unknown", "Suspicious"]
@@ -60,15 +79,18 @@ class USBEnv:
             "steps": self.steps
         }
 
+
 env = USBEnv()
 
 class ActionInput(BaseModel):
     action: str
 
+
+# ---------------- API ROUTES ----------------
 @app.post("/reset")
 def reset():
     try:
-        llm_output = call_llm()
+        llm_output = call_llm()   # ✅ MUST EXECUTE
     except Exception as e:
         llm_output = f"LLM error: {str(e)}"
 
@@ -76,19 +98,23 @@ def reset():
     result["llm_check"] = llm_output
     return result
 
+
 @app.post("/step")
 def step(input: ActionInput):
     return env.step(input.action)
 
+
 @app.get("/state")
 def state():
     return env.get_state()
+
 
 @app.get("/")
 def root():
     return {"message": "USB Security OpenEnv Running"}
 
 
+# ---------------- ENTRY POINT ----------------
 def main():
     import uvicorn
     uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
@@ -96,21 +122,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-import os
-from openai import OpenAI
-
-def call_llm():
-    client = OpenAI(
-        base_url=os.environ["API_BASE_URL"],
-        api_key=os.environ["API_KEY"],
-    )
-
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "user", "content": "Hello"}
-        ],
-        max_tokens=5
-    )
-
-    return response.choices[0].message.content
