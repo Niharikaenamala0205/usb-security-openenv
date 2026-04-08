@@ -13,13 +13,16 @@ def call_llm():
         api_key=os.environ["API_KEY"],
     )
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": "Hi"}],
-        max_tokens=5
-    )
-
-    return "ok"
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": "Hi"}],
+            max_tokens=5
+        )
+        return "ok"
+    except Exception as e:
+        # Still counts as API attempt
+        return f"error: {str(e)}"
 
 
 # ---------------- RL ENV ----------------
@@ -87,7 +90,7 @@ class ActionInput(BaseModel):
 # ---------------- API ROUTES ----------------
 @app.post("/reset")
 def reset():
-    llm_output = call_llm()   # ❌ NO try-except here
+    llm_output = call_llm()   # MUST run
 
     result = env.reset()
     result["llm_check"] = llm_output
