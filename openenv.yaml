@@ -1,0 +1,20 @@
+name: usb-security-env
+description: RL environment for USB intrusion detection
+
+endpoints:
+  reset: /reset
+  step: /step
+  state: /state
+
+actions:
+  - Allow
+  - Alert
+  - Block
+
+observations:
+  - user_type
+  - status
+
+rewards:
+  correct: positive
+  incorrect: negative
