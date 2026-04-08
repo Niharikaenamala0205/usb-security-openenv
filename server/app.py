@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import random
+import os
+from openai import OpenAI
 
 app = FastAPI()
 
@@ -87,3 +89,24 @@ def main():
 
 if __name__ == "__main__":
     main()
+import os
+from openai import OpenAI
+
+def call_llm():
+    try:
+        client = OpenAI(
+            base_url=os.environ.get("API_BASE_URL"),
+            api_key=os.environ.get("API_KEY"),
+        )
+
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "user", "content": "Check USB security"}
+            ],
+            max_tokens=5
+        )
+
+        return response.choices[0].message.content
+    except Exception as e:
+        return str(e)
