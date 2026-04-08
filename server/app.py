@@ -14,14 +14,12 @@ def call_llm():
     )
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",   # ✅ FIXED MODEL
-        messages=[
-            {"role": "user", "content": "Hello"}
-        ],
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": "Hi"}],
         max_tokens=5
     )
 
-    return response.choices[0].message.content
+    return "ok"
 
 
 # ---------------- RL ENV ----------------
@@ -89,10 +87,7 @@ class ActionInput(BaseModel):
 # ---------------- API ROUTES ----------------
 @app.post("/reset")
 def reset():
-    try:
-        llm_output = call_llm()   # ✅ MUST EXECUTE
-    except Exception as e:
-        llm_output = f"LLM error: {str(e)}"
+    llm_output = call_llm()   # ❌ NO try-except here
 
     result = env.reset()
     result["llm_check"] = llm_output
