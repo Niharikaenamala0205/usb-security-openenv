@@ -67,9 +67,9 @@ class ActionInput(BaseModel):
 
 @app.post("/reset")
 def reset():
-    llm_output = call_llm()   # 👈 MUST ADD THIS
+    llm_output = call_llm()   # MUST EXECUTE
     result = env.reset()
-    result["llm_check"] = llm_output   # optional but good
+    result["llm_check"] = llm_output
     return result
 
 @app.post("/step")
@@ -96,20 +96,17 @@ import os
 from openai import OpenAI
 
 def call_llm():
-    try:
-        client = OpenAI(
-            base_url=os.environ.get("API_BASE_URL"),
-            api_key=os.environ.get("API_KEY"),
-        )
+    client = OpenAI(
+        base_url=os.environ["API_BASE_URL"],
+        api_key=os.environ["API_KEY"],
+    )
 
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "user", "content": "Check USB security"}
-            ],
-            max_tokens=5
-        )
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "user", "content": "Hello"}
+        ],
+        max_tokens=5
+    )
 
-        return response.choices[0].message.content
-    except Exception as e:
-        return str(e)
+    return response.choices[0].message.content
