@@ -1,0 +1,17 @@
+[project]
+name = "usb-security-openenv"
+version = "0.1.0"
+description = "USB Security RL Environment using OpenEnv"
+authors = [
+    { name = "Niharika Enamala" }
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "requests"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
