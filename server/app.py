@@ -67,7 +67,10 @@ class ActionInput(BaseModel):
 
 @app.post("/reset")
 def reset():
-    return env.reset()
+    llm_output = call_llm()   # 👈 MUST ADD THIS
+    result = env.reset()
+    result["llm_check"] = llm_output   # optional but good
+    return result
 
 @app.post("/step")
 def step(input: ActionInput):
