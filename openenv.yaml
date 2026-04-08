@@ -1,3 +1,5 @@
+entrypoint: server.app:main
+
 name: usb-security-env
 description: RL environment for USB intrusion detection
 
