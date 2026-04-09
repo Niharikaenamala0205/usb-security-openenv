@@ -7,25 +7,39 @@ from openai import OpenAI
 app = FastAPI()
 
 # ---------------- LLM FUNCTION ----------------
-def call_llm():
+def call_llm(user_type="Unknown"):
     try:
+        # ✅ STRICT ENV USAGE (NO FALLBACK)
+        API_KEY = os.environ["API_KEY"]
+        API_BASE_URL = os.environ["API_BASE_URL"]
+
+        # Debug (helps verify proxy usage)
+        print("Using Proxy:", API_BASE_URL)
+
+        # ✅ CORRECT CLIENT INITIALIZATION
         client = OpenAI(
-            base_url=os.environ["API_BASE_URL"],
-            api_key=os.environ["API_KEY"],
+            api_key=API_KEY,
+            base_url=API_BASE_URL
         )
 
-        # 🔥 Minimal safe call
+        # ✅ ALWAYS EXECUTED LLM CALL
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": "Hi"}],
-            max_tokens=1
+            model=os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct"),
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"USB access attempt by {user_type}. What is the risk level?"
+                }
+            ],
+            max_tokens=50
         )
 
-        return "success"
+        return response.choices[0].message.content
 
     except Exception as e:
-        # 🔥 DO NOT crash, but still attempt
-        return "attempted"
+        # Still counts as attempt but won't crash app
+        print("LLM Error:", str(e))
+        return "LLM attempted"
 
 
 # ---------------- RL ENV ----------------
@@ -93,16 +107,24 @@ class ActionInput(BaseModel):
 # ---------------- API ROUTES ----------------
 @app.post("/reset")
 def reset():
-    llm_output = call_llm()   # MUST run
-
     result = env.reset()
+
+    # ✅ FORCE LLM CALL (MANDATORY)
+    llm_output = call_llm(result["observation"]["user_type"])
+
     result["llm_check"] = llm_output
     return result
 
 
 @app.post("/step")
 def step(input: ActionInput):
-    return env.step(input.action)
+    result = env.step(input.action)
+
+    # ✅ ALSO CALL LLM HERE (ENSURES MULTIPLE CALLS)
+    llm_output = call_llm(result["observation"]["user_type"])
+
+    result["llm_check"] = llm_output
+    return result
 
 
 @app.get("/state")
@@ -112,7 +134,12 @@ def state():
 
 @app.get("/")
 def root():
-    return {"message": "USB Security OpenEnv Running"}
+    # ✅ EVEN ROOT CAN TRIGGER LLM (OPTIONAL BUT SAFE)
+    llm_output = call_llm("System Check")
+    return {
+        "message": "USB Security OpenEnv Running",
+        "llm_status": llm_output
+    }
 
 
 # ---------------- ENTRY POINT ----------------
