@@ -5,6 +5,8 @@ import os
 from openai import OpenAI
 from tasks import tasks
 
+print("TASKS LOADED:", tasks)
+
 app = FastAPI()
 
 # ---------------- LLM FUNCTION ----------------
