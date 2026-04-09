@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import random
 import os
 from openai import OpenAI
+from server.env import USBEnv
 from tasks import tasks
 
 print("TASKS LOADED:", tasks)
