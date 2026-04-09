@@ -1,4 +1,4 @@
-from env import USBEnv
+from server.app import USBEnv
 
 env = USBEnv()
 
