@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import random
 import os
 from openai import OpenAI
+from tasks import tasks
 
 app = FastAPI()
 
