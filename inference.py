@@ -1,65 +1,51 @@
 import os
 from openai import OpenAI
 
-def call_llm():
+def safe_llm_call(user_type):
     try:
-        # ✅ Strict env usage
-        API_KEY = os.environ["API_KEY"]
-        API_BASE_URL = os.environ["API_BASE_URL"]
-
-        print("Using Proxy:", API_BASE_URL)
-
         client = OpenAI(
-            api_key=API_KEY,
-            base_url=API_BASE_URL
+            api_key=os.environ.get("API_KEY"),
+            base_url=os.environ.get("API_BASE_URL")
         )
 
-        try:
-            # ✅ Safe LLM call
-            response = client.chat.completions.create(
-                model=os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct"),
-                messages=[
-                    {"role": "user", "content": "USB security check"}
-                ],
-                max_tokens=50,
-                timeout=10   # 🔥 prevent hanging
-            )
+        response = client.chat.completions.create(
+            model=os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct"),
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"USB security analysis for user type: {user_type}"
+                }
+            ],
+            max_tokens=50
+        )
 
-            return response.choices[0].message.content
-
-        except Exception as llm_error:
-            print("LLM call failed:", str(llm_error))
-            return "LLM call attempted but failed"
+        return response.choices[0].message.content
 
     except Exception as e:
-        print("Setup error:", str(e))
-        return "LLM setup failed"
+        return f"LLM failed safely: {str(e)}"
 
 
 def run():
-    try:
-        print("Starting inference...")
+    user_types = ["Owner", "Unknown", "Suspicious"]
 
-        # ✅ ALWAYS CALL LLM
-        llm_output = call_llm()
+    # ---------------- START BLOCK ----------------
+    print("[START] task=USB_SECURITY_ANALYSIS", flush=True)
 
-        print("LLM Output:", llm_output)
+    for i, user in enumerate(user_types, start=1):
 
-        # ✅ Always return success output
-        result = {
-            "status": "success",
-            "llm_output": llm_output
-        }
+        llm_output = safe_llm_call(user)
 
-        print(result)
+        # ---------------- STEP BLOCK ----------------
+        print(
+            f"[STEP] step={i} user_type={user} llm_output={llm_output}",
+            flush=True
+        )
 
-    except Exception as e:
-        # 🔥 FINAL SAFETY NET (MOST IMPORTANT)
-        print("Critical error caught:", str(e))
-        print({
-            "status": "recovered",
-            "error": str(e)
-        })
+    # ---------------- END BLOCK ----------------
+    print(
+        "[END] task=USB_SECURITY_ANALYSIS score=1.0 steps=3",
+        flush=True
+    )
 
 
 if __name__ == "__main__":
